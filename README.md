@@ -150,7 +150,7 @@
 ## pointers
 * ### Memory stack in Go
   * Every function in go creates a new memory stack in use.
-    ![img.png](images/img.png)
+    ![img.png](images/img.png)   
     In this memory stack, all memory usage of variables are considered "immutable".    
     They can only be accessed within the stack and cannot be modified from outside the scope.
     ```go
