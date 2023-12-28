@@ -208,3 +208,57 @@
     ```
     
 * ### [Great explenation of pointers in go](https://www.youtube.com/watch?v=sTFJtxJXkaY&t=632s)
+
+## loops
+* golang has a similar but different way of defining loops.   
+* ### No `while`
+  * Golang `for` keyword replaces the `while` keyword unlike most programming languages.   
+    ```go
+    // while (condition)
+    for variable > 10 {
+    }
+    // while true
+    for true {
+    }
+    ```
+* ### Unified `foreach`
+  * Golang has a unified method for looping elements from iterations compared to other languages.   
+    #### Go iterating array
+    ```go
+    for i, element := range array {
+    }
+    ``` 
+    #### Go iterate map   
+    ```go
+    for key, value := range map {
+    }
+    ```
+
+    #### Java iterate array
+    ```
+    // available in java 5
+    for (Type element : array) {
+    }
+    ```
+    
+    #### Java iterate map
+    ```
+    // 1. using map entryset
+    for (Map.Entry<String, Integer> entry : map.entrySet()) {
+        entry.getKey();
+        entry.getValue();
+    }
+    
+    // 2. using map iterator
+    Iterator<Integer> iterator = map.values().iterator();
+    while (iterator.hasNext()) {
+        Integer value = iterator.next();
+    }
+    
+    // 3. using map foreach
+    map.forEach((key, value) -> ...);
+    ```   
+    as you can see, Golang does have a more unified and simple method compared to java.
+
+## Error Handling
+* golang has quite a unique way of handling errors compared to other languages.
