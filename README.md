@@ -262,3 +262,92 @@
 
 ## Error Handling
 * golang has quite a unique way of handling errors compared to other languages.
+* ### panic
+  * Conventional programming languages throw exceptions, in Go, we throw panics.   
+    But as funny as it seems, we cannot catch a panic like a try catch method.
+  * #### The characteristics of panic
+    1. The goroutines where the panic occurred terminates
+    2. It does not affect the execution of other goroutines
+    3. It is a unrecoverable state and terminate immediately
+* ### handling panic with `defer` and `recover`
+  * I wouldn't call this "handling" because `defer` will not stop the termination and keep the goroutine running. 
+    But still we should be able to log the panic and change our code to return it as a custom error afterwards.      
+    ```go
+    func main() {
+        defer func() {
+            if r := recover(); r != nil {
+                fmt.Println("defer check for from panic:", r)
+            }
+        }()
+
+        panic("panic attack")
+    }
+    ```   
+    Here, the `r:=recover();` returns the string "panic attack".   
+    Remember that panic has a parameter of type `any`, so `recover` returns whatever type that is given.
+* ### handling goroutines panic with `defer`
+  * When we use goroutines, we use `WaitGroup` in order to wait for the routine to be finished.    
+    If the routine panics without `wg.Done()`, the program will wait forever. In order to block such behaviour we must `defer`.
+  * ```go
+    var wg sync.WaitGroup
+  
+    func waitRoutine() {
+      defer wg.Done()
+      panic("panic attack")
+    }
+  
+    func main() {
+      wg.Add(1)
+      go waitRoutine()
+      wg.Wait()
+    }
+    ```
+* ### errors
+  * If you check the `errors.go` package, you can see that it is shockingly simple.   
+    But because of it's "short" code, it does lack some functionality that other languages offer as a given.   
+    One of the features that lack I find annoying is getting the stack trace.
+    ![img.png](images/img2.png)
+  * #### The lack of information in errors   
+    In java, the exception class itself has a `printStackTrace`.   
+    ```
+    try {
+        throw new RuntimeException("oops, error.");
+    } catch (RuntimeException e) {
+        e.printStackTrace();
+    }
+    ```
+    Creating custom errors might me sufficient enough, but if you use that custom error raised in two different places, how would 
+    you debug just using a the string message?   
+    So our best bet would be to create a custom error struct that contains a stack trace.
+    ```go
+    package main
+    
+    import (
+        "fmt"
+        "runtime/debug"
+    )
+    
+    type CustomError struct {
+        errorMessage string
+        stack        string
+    }
+    
+    func (e CustomError) Error() string {
+        return e.errorMessage
+    }
+    
+    func NewCustomError(message string) CustomError {
+        return CustomError{errorMessage: message, stack: string(debug.Stack())}
+    }
+    
+    func main() {
+        err := NewCustomError("oops, error.")
+        fmt.Println(err.stack)
+    }
+    ```
+    If you use custom logging services like datadog or logstash, you should customize your error struct to be as specific as possible
+    , such as the name of the gorutine `runtime.GoID()`, the current executing code file with `runtime.Caller(1)` etc.   
+    <br/>
+    Example of error logging in datadog
+    ![img.png](img.png)
+    
