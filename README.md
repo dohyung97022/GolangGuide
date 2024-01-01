@@ -351,3 +351,100 @@
     Example of error logging in datadog
     ![img.png](img.png)
     
+## Goroutines
+* "Goroutines are lightweight thread managed by the Go runtime." - [official go.dev](https://go.dev/tour/concurrency/1#:~:text=A%20goroutine%20is%20a%20lightweight%20thread%20managed%20by%20the%20Go%20runtime.&text=The%20evaluation%20of%20f%20%2C%20x,shared%20memory%20must%20be%20synchronized.)   
+  In most programming languages, you have the option to create a thread or process for concurrency.   
+  In Go, we can only create goroutines.   
+* ### WaitGroup
+  ```go
+  package main
+  
+  import (
+    "sync"
+    "time"
+  )
+  
+  var wg sync.WaitGroup
+  
+  func waitRoutine() {
+    defer wg.Done()
+    time.Sleep(1000)
+  }
+  
+  func main() {
+   for i := 0; i < 1000; i++ {
+      wg.Add(1)
+      go waitRoutine()
+   }
+   wg.Wait()
+  }
+  ```
+  WaitGroup is a tool in the "sync" package in order to wait for goroutines.   
+  <br/>
+  * #### Functionality
+    * #### `wg.Add(delta)`   
+      this function adds the parameter `delta` in most case 1, meaning as a incrementation of goroutines to be waited.   
+      ```go
+      func main() {
+        wg.Add(1000)
+        for i := 0; i < 1000; i++ {
+            // wg.Add(1)
+            go waitRoutine()
+        }
+        wg.Wait()
+      }
+      ```
+      This code has no functional difference with the previous code.
+    * #### `defer wg.Done()`   
+      This tells the `wg` waitGroup that 1 goroutine is finished.   
+    * #### `wg.Wait()`
+      This waits until enough `wg.Done()` is called as much as the `delta` added by `wg.Add()`
+* ### Channels
+* ```go
+  package main
+
+  import (
+    "fmt"
+  )
+  
+  func sendData(ch chan int) {
+    for i := 0; i < 5; i++ {
+        ch <- i
+    }
+    close(ch)
+  }
+  
+  func main() {
+    ch := make(chan int)
+    go sendData(ch)
+
+    for {
+        data, running := <-ch
+        if !running {
+            break
+        }
+        fmt.Println(data)
+    }
+  }
+  ```
+  In Go, waitGroups are not the only way to wait for goroutines, you can also use channels in order to receive and e wait.   
+* #### Functionality
+  * #### `ch := make(chan int, size)`   
+    This line declares a channel variable. In order to specify a channel type, `chan int` is used.   
+    You can also specify the number of how much values can be sent to this channel by `size`.
+    ```go
+    ch := make(chan int, 3)
+    ch <- 1
+    ch <- 2
+    ch <- 3
+    // The next send will block and result in a panic
+    ch <- 4
+    ```
+  * #### `ch <- i`
+    This line is used to send variables to the channel.   
+  * #### `close(ch)`
+    This line makes the `running` boolean in `data, running := <-ch` return as false.   
+    Which means that the channel is closed and no longer for use.
+  * #### `data, running := <-ch`
+    This line is used for receiving data in the channel.   
+    `data` is sent by `ch <- i`, `running` is changed to false by `close(ch)`.
