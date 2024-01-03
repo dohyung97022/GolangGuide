@@ -349,7 +349,7 @@
     , such as the name of the gorutine `runtime.GoID()`, the current executing code file with `runtime.Caller(1)` etc.   
     <br/>
     Example of error logging in datadog
-    ![img.png](img.png)
+    ![img.png](images/img3.png)
     
 ## Goroutines
 * "Goroutines are lightweight thread managed by the Go runtime." - [official go.dev](https://go.dev/tour/concurrency/1#:~:text=A%20goroutine%20is%20a%20lightweight%20thread%20managed%20by%20the%20Go%20runtime.&text=The%20evaluation%20of%20f%20%2C%20x,shared%20memory%20must%20be%20synchronized.)   
@@ -448,3 +448,91 @@
   * #### `data, running := <-ch`
     This line is used for receiving data in the channel.   
     `data` is sent by `ch <- i`, `running` is changed to false by `close(ch)`.
+
+## OOP? in Go
+* Go is quite different than other languages even in implementing OOP.   
+  Go does not have inheritance, and it has embedding.
+* ### Embedding
+  ![img_1.png](images/img4.png)
+  ![img.png](images/img5.png)
+  <br/>
+  In inheritance, a dog is a mammal, which is a animal.  
+  A mammal can run, and a animal can breath.  
+  <br/>
+  In embedding, a dog has legs, and lungs.  
+  Legs can run, and lungs can breath.  
+  <br/>
+  [Great conference in GopherUK](https://www.youtube.com/watch?v=-LzYjMzfGDQ)
+  <br/>   
+
+* ### Promotion
+  "For a value x of type T or *T where T is not a pointer or interface type, x.f denotes the field or method at the shallowest depth in T where there is such an f. If there is not exactly one f with shallowest depth, the selector expression is illegal." - [Go](https://go.dev/ref/spec)
+  ```go
+  package main
+
+  import "fmt"
+  
+  type Depth0 struct {
+    Depth1
+  }
+  
+  type Depth1 struct {
+    Depth2
+    seq int
+  }
+  
+  type Depth2 struct {
+    seq int
+  }
+  
+  func main() {
+    depth := Depth0{Depth1: Depth1{seq: 1, Depth2: Depth2{seq: 2}}}
+    fmt.Println(depth.seq)
+  }
+  ```
+  The difference with java and other conventional code is that the `seq` can be accessed within of type `Depth0`.
+  This is because of golang uses embedding not inheritance.   
+  <br>
+  If a dog has a leg, you can say that a dog can walk. : `depth.seq`  
+  You can also say that the dogs right leg is walking. : `depth.Depth1.seq`   
+  You can also say that the dogs left leg is walking. : `depth.Depth2.seq`   
+  <br>
+  Another thing to note is that the code above will return `seq` of `depth1` not `depth2`. As instructed from Go as "shallowest depth."   
+  <br>
+  If the `seq` is in the same depth, golang returns a compile error "ambiguous selector".
+* ### Duck Typing
+  "If it walks like a duck, and it quacks like a duck. It must be a duck."   
+  In Go, this is allowed in interfaces, but not in structs.
+  ```go
+  package main
+
+  type Duck interface {
+    quack()
+    walk()
+  }
+  
+  // class to class duck typing does not work
+  // type Duck struct {
+  // }
+  
+  type Something struct {
+  }
+  
+  func (Something) quack() {
+  }
+  
+  func (Something) walk() {
+  }
+  
+  func isThisADuck(duck Duck) {
+  }
+  
+  func main() {
+    something := Something{}
+    isThisADuck(something)
+  }
+  ```
+  Note that the `Duck` interface was not mentioned anywhere on class `Something`.   
+  But still passes as the parameter as the interface `Duck`.
+* ### Struct
+* ### Interface
