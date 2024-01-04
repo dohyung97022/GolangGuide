@@ -534,5 +534,60 @@
   ```
   Note that the `Duck` interface was not mentioned anywhere on class `Something`.   
   But still passes as the parameter as the interface `Duck`.
-* ### Struct
-* ### Interface
+* ### Struct (Json handling)
+  ```go
+  package main
+  import (
+    "encoding/json"
+    "fmt"
+  )
+  type Account struct {
+    email    string `json:"email"`
+    firstName string `json:"first_name,omitempty"`
+    lastName string `json:"last_name,omitempty"`
+    password string
+    age      uint8  `json:"age,omitempty"`
+  }
+  type AccountView struct {
+    Account
+    password string `json:"omitempty"`
+  }
+  func main() {
+    account := Account{
+      email: "dohyung97022@gmail.com",
+      password: "my super secret password"
+    }
+
+    jsonData, _ := json.Marshal(account)
+    fmt.Println(jsonData)
+
+    accountView := AccountView{Account: account}
+    jsonData, _ = json.Marshal(accountView)
+    fmt.Println(jsonData)
+  }
+  ```
+  Structs are the "Class" of golang. So easy, everybody knows that.   
+  So what I wanted to talk about is, handling json within Go.   
+  In modern programming, we use the term `model`, `view`, `controller`, `service` to separate structures within the backend.   
+  You will need to create `model` as `view(json)` and communicate with the frontend.   
+  <br>
+  In Go, you can use keywords such as `json`, `omitempty`.   
+  The example above, `account` is set with no `firstname` `lastname` or `age`.   
+  `omitempty` will remove the field that is not specified.
+  ```
+  {"first_name":"dohyung97022@gmail.com", "password":"my super secret password"}
+  ```
+  There will be situations when you need to remove the values like `password`.   
+  In this case, you can use "Promotion" in order to remove unwanted json values.   
+  Remember, embedding in Go always promote the "shallowest depth".
+  ```
+  {"first_name":"dohyung97022@gmail.com"}
+  ```
+
+
+TODO :   
+benchmark   
+https://www.youtube.com/watch?v=u6dpEuJ7tB8
+
+test   
+https://www.youtube.com/watch?v=JTLB7j8M85A
