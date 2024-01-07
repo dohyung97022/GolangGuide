@@ -158,7 +158,7 @@
 
     import "fmt"
   
-    func main() {
+    func main()
       var IntegerValue int64 = 256
     
       WithoutPointer(IntegerValue)
@@ -658,6 +658,8 @@
     2. placing test files besides the code file enforces the dev to create a test file.   
        If it is in a separate file, devs can miss its location, or miss some of the services.
 
+    [Check this link for more on this topic](https://www.reddit.com/r/golang/comments/u23z67/why_are_tests_file_created_right_beside_the/)
+
 * ### Test Structure
   * ### `testing.T`   
     `testing.T` contains most of the testing utilities.   
@@ -678,9 +680,44 @@
     }
     ```
   * ### `testing.T.Fail()` && `testing.T.FailNow()`
+    `Fail()` and the `FailNow()` does not take any arguments.   
+    The `Fail()` function will tell that the test has failed, but keep testing other functions.   
+    The `FailNow()` function will tell that the test has failed and exit the program.
+  * ### `testing.T.Error(args ...any)` && `testing.T.Fatal(args ...any)`
+    `Error()` and `Fatal()` takes an arguments or `...any` this results in `fmt.Sprintln(args...)`.   
+    `Errorf()` and `Fatalf()` takes an additional string of `format` and format prints `args`   
+    The `Error()` function will tell that the test failed and continue.   
+    The `Fatal()` function will tell that the test failed and exit the program.   
+  * ### example
+    ```go
+    type in struct {
+      a int
+      b int
+    }
+
+    type test struct {
+      name string
+      in   in
+      out  int
+    }
+
+    var cases = []test{
+      {"all zero", in{0, 0}, 0},
+      {"left zero", in{0, 3}, 3},
+      {"right zero", in{3, 0}, 3},
+    }
+
+    func TestAdd(t *testing.T) {
+      for _, test := range cases {
+        t.Run(test.name, func(t *testing.T) {
+          if add(test.in.a, test.in.b) != test.out {
+            t.Errorf("%d added with %d is not the result %d", test.in.a, test.in.b, test.out)
+          }
+        })
+      }
+    }
+    ```
+
 TODO :   
 benchmark   
 https://www.youtube.com/watch?v=u6dpEuJ7tB8
-
-test   
-https://www.youtube.com/watch?v=JTLB7j8M85A
