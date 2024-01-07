@@ -584,7 +584,100 @@
   {"first_name":"dohyung97022@gmail.com"}
   ```
 
+## Testing
+* ### Why?
+  I have heard some people that TDD is tedious, and time-consuming, but I totally disagree with this statement. It is a tradeoff for stability and speed over time, with current cost and speed of development.      
+  It might seem tedious now, but in the long run, it will be even faster.    
+  ### Great Reference
+  Lets say that you have developed a function that has a complicated business logic.   
+  When you come back to your code after a year, how would you remember such logic?   
+  Well you could dig up your documentation, as documentation is a must for development.   
+  But test code is also be a great point for reference. It has information of what values should go in, and what should go out, even with the edge cases you have to worry about.   
+  ```go
+  type hashAuthorization struct {
+    hashType string
+    key      string
+    value    string
+  }
+  
+  type test struct {
+    name string
+    in   http.Header
+    out  hashAuthorization
+  }
+  
+  var cases = []test{
+    {"parse hashAuthorization",
+    http.Header{"authorization": []string{"SAPISIDHASH 1704335617_e72d02a68243c61b04537b1165b33b55c3f77224"}},
+    hashAuthorization{hashType: "SAPISIDHASH", key: "1704335617", value: "e72d02a68243c61b04537b1165b33b55c3f77224"}},
+  }
+  ```   
+  Just by looking at this testCase, you can know that the function we are testing    
+  1. has an input of `http.Header`,
+  2. has a output of `hashAuthorization`,
+  3. parses `SAPISIDHASH 1704335617_e72d02a68243c61b04537b1165b33b55c3f77224`   
+     into `hashType`, `key` and `value`.
+  
+  ### Room for error
+  Lets say that your company has employed a new jr developer.   
+  The jr has no idea of checking out documentations or any point of reference.   
+  Or does read the documentation but misunderstood it.   
+  <br>
+  This Jr dev has been assigned to add some business logic into your function.   
+  If you have written your test code will great edge cases,   
+  The Jr devs code will not even build to production.    
+  The architecture of your CI/CD should check `go test` and stop if it fails test cases.   
 
+* ### File Structure
+  * ```
+    src
+      payment
+        payment.go
+        payment_service.go
+        payment_service_test.go
+      user
+        user.go
+        user_service.go
+        user_service_test.go
+      main.go
+    ```
+    1. The test file needs to end with `_test`
+    2. The test file needs to be within the same folder (package)   
+    <br>
+
+    You should not place your test files in a separate folder (package)
+    ```
+    src
+      test
+        payment_service_test.go
+        user_service_test.go
+    ```
+    The reason being is that
+    2. This will create the test files in a separate package of `test`
+    1. The function to be tested should not be public just to be accessed by test files
+    2. placing test files besides the code file enforces the dev to create a test file.   
+       If it is in a separate file, devs can miss its location, or miss some of the services.
+
+* ### Test Structure
+  * ### `testing.T`   
+    `testing.T` contains most of the testing utilities.   
+    When you add a test function you should add a `testing.T` as a pointer.
+    ```go
+    func TestAdd(t *testing.T) {}
+    ```
+  * ### `testing.T.Run(name string, function func)`
+    The `Run` method runs the `function` in a separate goroutine.   
+    The `function` receives a `testing.T` as a parameter.  
+    ```go
+    func TestBusinessFunction(t *testing.T) {
+      t.Run("case input1,input2", func(t *testing.T) {
+        if businessFunction("input1", "input2") != "output" {
+          t.Error("business logic has failed")
+        }
+      })
+    }
+    ```
+  * ### `testing.T.Fail()` && `testing.T.FailNow()`
 TODO :   
 benchmark   
 https://www.youtube.com/watch?v=u6dpEuJ7tB8
