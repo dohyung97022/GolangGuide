@@ -1,5 +1,18 @@
 # GolangGuide
 
+### Table of contents   
+[compile, run](#compile-run)   
+[types](#types)   
+[fmt](#fmt)   
+[pointers](#pointers)   
+[loops](#loops)   
+[Error Handling](#Error-Handling)   
+[Goroutines](#Goroutines)   
+[OOP in Go](#OOP-in-Go)   
+[Testing](#Testing)   
+[Benchmarking](#Benchmarking)   
+
+
 ## compile, run
 * ### Golang is built for simple yet fast compile and executions.   
   * If you have experience with compiling with python virtual environments with requirements.txt or java gradle / maven, 
@@ -449,7 +462,7 @@
     This line is used for receiving data in the channel.   
     `data` is sent by `ch <- i`, `running` is changed to false by `close(ch)`.
 
-## OOP? in Go
+## OOP in Go
 * Go is quite different than other languages even in implementing OOP.   
   Go does not have inheritance, and it has embedding.
 * ### Embedding
@@ -718,6 +731,44 @@
     }
     ```
 
-TODO :   
-benchmark   
-https://www.youtube.com/watch?v=u6dpEuJ7tB8
+## Benchmarking
+* Golang has its own benchmark cli that can be run by `go test ./... -bench=.`.   
+  Benchmarking cpu and memory usage is crucial for server management.   
+  If you can identify how much time a function takes, and how much memory it uses, you can identify and improve such problems.   
+  <br>
+  Example output for `go test ./.. -bench -benchtime=10000x -benchmem`
+  ![img6.png](images%2Fimg6.png)
+  
+* ### `-bench="BenchmarkFunction"`
+  In go, the program identifies a benchmark function by naming "Benchmark" at the beginning.
+  ```go
+  func BenchmarkStringsBuilder(b *testing.B) {
+    var builder strings.Builder
+    for n := 0; n < b.N; n++ {
+      builder.WriteString("a")
+    }
+  }
+  ```
+  You can then specify that function by `go test ./... -bench=BenchmarkStringsBuilder`   
+  The -bench takes a regex that specifies function names.   
+  For example `go test ./... -bench=String` will run all benchmarks with the word `String`.
+* ### `testing.B`
+  The go benchmark function takes a `testing.B` as an argument.   
+  This class contains multiple parameters that is set for benchmarking.
+* ### `-benchtime=10000x`, `-benchtime=10s`
+  The `testing.B` class contains a variable of `N`.   
+  This `N` value is set when you configure it with `-benchtime=10x`.
+  ```go
+  for n := 0; n < b.N; n++ {
+    builder.WriteString("a")
+  }
+  ```
+  So it would be ideal to keep your benchmark functions to loop through `testing.B.N` for this command to function.
+  You can also set the `-benchtime` as seconds.   
+  This would result your benchmark to run for that specified seconds.
+* ### `-benchmem`
+  This command is added to `go test ./... bench=. -benchmem` to print out the memory usage.   
+* ### `-cpu=1,2,4,12`
+  This command is added to benchmark with given number of cpu cores.   
+  ![img7.png](images%2Fimg7.png)
+
